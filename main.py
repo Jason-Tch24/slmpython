@@ -100,7 +100,7 @@ def generer_mot(dico_probabilites, longueur):
 
         # Choisir la prochaine lettre en fonction des probabilités
         lettre_courante = random.choices(lettres, probabilites)[0]
-        mot.append(lettre_courante)
+        mot.append(lettre_courante)git
 
     return ''.join(mot)
 
