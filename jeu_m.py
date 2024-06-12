@@ -237,21 +237,6 @@ def computer(units_to_move , objectives) :
     
     print(matrix)
     
-
-
-    # Scope
-    def get_adjacent_positions(x, y):
-        """Retourne les positions adjacentes à une position donnée."""
-       
-
-        
-    
-      
-
-    scope =  [
-            (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 2, y) , (x - 2 + y), # Horizontal and vertical moves
-            (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1), (x - 1, y + 1)  # Diagonal moves
-        ]
     
     for unit in units_to_move:
             possible_moves = [(unit.x + dx, unit.y + dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if unit.can_move(unit.x + dx, unit.y + dy)]
