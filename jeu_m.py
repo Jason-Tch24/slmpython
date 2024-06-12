@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 # Initialisation de pygame
 pygame.init()
@@ -250,6 +251,64 @@ def computer(units_to_move , objectives) :
             else:
                 unit.move(move[0], move[1])
 
+def cilblage( ):
+    return True 
+
+#afficher les position de chaque unité voir de tout les objectif
+def affiche_position(units):
+    matrise_distance = []
+    # Distance par rapport aux objectif
+    for unit in units:
+        tab_distance = []
+        if unit.color == ENEMY_COLOR:
+            print(f'Unit at position: ({unit.x}, {unit.y})')
+            for obj in objectives:
+                diff_x = obj['x'] - unit.x
+                diff_y = obj['y'] - unit.y
+                x = diff_x * diff_x
+                y = diff_y * diff_y
+                distance = math.sqrt(x + y)
+                print(f'Distance : ({distance})')
+                tab_distance.append({'Distance': distance, 'Diff_x': diff_x, 'Diff_y': diff_y})
+            matrise_distance.append(tab_distance)
+    i = 0
+    for unit in units :
+        if unit.color == ENEMY_COLOR:
+
+            mini = 1000000000000
+            if i < len(objectives):
+                for donnee in matrise_distance[i]:
+                    if donnee['Distance'] < mini:
+                        mini = donnee['Distance']
+                for donnee in matrise_distance[i]:
+                    if donnee['Distance'] == mini:
+                        if mini != 0:
+                            if(donnee['Diff_x'] < 0 and donnee['Diff_y'] < 0) :
+                                unit.move(unit.x-1, unit.y - 1)
+                            elif (donnee['Diff_x'] > 0 and donnee['Diff_y'] < 0) :
+                                unit.move(unit.x + 1, unit.y - 1)
+                            elif (donnee['Diff_x'] > 0 and donnee['Diff_y'] > 0) :
+                                unit.move(unit.x + 1, unit.y + 1)
+                            elif (donnee['Diff_x'] < 0 and donnee['Diff_y'] > 0) :
+                                unit.move(unit.x - 1, unit.y + 1)
+
+                            if (donnee['Diff_x'] == 0 and donnee['Diff_y'] > 0) :
+                                unit.move(unit.x, unit.y + 1 )
+                            if (donnee['Diff_x'] == 0 and donnee['Diff_y'] < 0) :
+                                unit.move(unit.x, unit.y - 1 )
+                            if (donnee['Diff_x'] > 0 and donnee['Diff_y'] == 0) :
+                                unit.move(unit.x + 1, unit.y )
+                            if (donnee['Diff_x'] < 0 and donnee['Diff_y'] == 0) :
+                                unit.move(unit.x - 1, unit.y )
+
+            print(mini)
+            i += 1
+
+    print(matrise_distance)
+
+    #calcul de distance
+    print(objectives)
+
  
 
 
@@ -289,6 +348,7 @@ while running:
                 x, y = event.pos
                 if end_turn_button_clicked((x, y), width, height, interface_height):
                     unit_moved = True
+                    affiche_position(units)
                 else:
                     grid_x, grid_y = x // tile_size, y // tile_size
                     if event.button == 1:  # Clic gauche pour sélectionner
