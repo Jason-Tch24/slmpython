@@ -1,14 +1,14 @@
 import pygame
 import random
 
-# Initialisation de pygame  
+# Initialisation de pygame
 pygame.init()
 
 # Dimensions de la fenêtre et de la carte
 tile_size = 30
-size = 12
+size = 20
 width, height = size * tile_size, size * tile_size
-interface_height = 150  # Hauteur supplémentaire pour l'interface
+interface_height = 100  # Hauteur supplémentaire pour l'interface
 
 # Couleurs
 PASSABLE_COLOR = (200, 200, 200)        # Gris clair pour les cases passables
@@ -76,22 +76,15 @@ class Unit:
 
             if target_unit.attacked_this_turn:
                 target_unit.pv -= 1
-                target_unit.attacked_this_turn = False
                 if target_unit.pv <= 0:
                     units.remove(target_unit)
                     return
-                elif 0 <= new_x < size and 0 <= new_y < size:
-                    if any(u.x == new_x and u.y == new_y and u.color != target_unit.color for u in units) or any(obj['x'] == new_x and obj['y'] == new_y and obj['type'] == 'MAJOR' for obj in objectives):
-                        units.remove(target_unit)
-                    else:
-                        target_unit.move(new_x, new_y)
+
+            if not (0 <= new_x < size and 0 <= new_y < size) or any(u.x == new_x and u.y == new_y and u.color != target_unit.color for u in units):
+                units.remove(target_unit)
             else:
-                if 0 <= new_x < size and 0 <= new_y < size:
-                    if any(u.x == new_x and u.y == new_y and u.color != target_unit.color for u in units) or any(obj['x'] == new_x and obj['y'] == new_y for obj in objectives):
-                        units.remove(target_unit)
-                    else:
-                        target_unit.move(new_x, new_y)
-                        target_unit.attacked_this_turn = True
+                target_unit.move(new_x, new_y)
+                target_unit.attacked_this_turn = True
 
     def get_symbols_on_same_tile(self, units):
         """Retourne les symboles des unités sur la même case."""
@@ -110,8 +103,8 @@ def generate_map(size):
 # Afficher la carte
 def draw_map(screen, game_map, tile_size):
     """Affiche la carte."""
-    for y in range(len(game_map)):
-        for x in range(len(game_map[y])):
+    for y in range(size):
+        for x in range(size):
             color = PASSABLE_COLOR
             pygame.draw.rect(screen, color, (x * tile_size, y * tile_size, tile_size, tile_size))
 
@@ -122,8 +115,8 @@ def generate_units():
     player_positions = [(0, i) for i in range(size)]
     enemy_positions = [(size - 1, i) for i in range(size)]
 
-    player_positions = random.sample(player_positions, 7)
-    enemy_positions = random.sample(enemy_positions, 7)
+    player_positions = random.sample(player_positions, 5)
+    enemy_positions = random.sample(enemy_positions, 5)
 
     player_units = [Unit(*pos, PLAYER_COLOR) for pos in player_positions]
     enemy_units = [Unit(*pos, ENEMY_COLOR) for pos in enemy_positions]
@@ -144,7 +137,7 @@ def add_objectives():
             objectives.append({'x': x, 'y': y, 'type': 'MAJOR'})
             break
 
-    for _ in range(2):
+    for _ in range(3):
         while True:
             x, y = random.randint(center_x - 5, center_x + 5), random.randint(center_y - 5, center_y + 5)
             if not any(obj['x'] == x and obj['y'] == y for obj in objectives):
@@ -194,7 +187,6 @@ def draw_end_turn_button(screen, width, height, interface_height):
 # Vérifier si le bouton de changement de tour est cliqué
 def end_turn_button_clicked(mouse_pos, width, height, interface_height):
     """Vérifie si le bouton de fin de tour a été cliqué."""
-    affiche_position(units)
     x, y = mouse_pos
     button_rect = pygame.Rect(width // 2 - 50, height, 100, interface_height - 10)
     return button_rect.collidepoint(x, y)
@@ -228,15 +220,59 @@ def draw_victory_message(screen, message, width, height):
     victory_img = font.render(message, True, (255, 255, 255))
     screen.blit(victory_img, (width // 2 - 100, height // 2 - 24))
 
-#afficher les position de chaque unité voir de tout les objectif
-def affiche_position(units):
-    for unit in units:
-        print(f'Unit at position: ({unit.x}, {unit.y})')
+def computer(units_to_move , objectives) :
+    matrix = [[0 for _ in range(size)] for _ in range(size)]; 
+    
+    for unit in units :
+        if unit.color == ENEMY_COLOR and not unit.moved:
+            matrix[unit.y][unit.x] = 2
+        else :
+            matrix[unit.y][unit.x] = 1
+    for obj in objectives :
+        if obj['type'] == 'MAJOR' :
+            matrix[obj['y']][obj['x']] = 3
+        else :
+             matrix[obj['y']][obj['x']] = 4
+    
+    
+    print(matrix)
+    
+
+
+    # Scope
+    def get_adjacent_positions(x, y):
+        """Retourne les positions adjacentes à une position donnée."""
+       
+
+        
+    
+      
+
+    scope =  [
+            (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 2, y) , (x - 2 + y), # Horizontal and vertical moves
+            (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1), (x - 1, y + 1)  # Diagonal moves
+        ]
+    
+    for unit in units_to_move:
+            possible_moves = [(unit.x + dx, unit.y + dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if unit.can_move(unit.x + dx, unit.y + dy)]
+           
+            if possible_moves:
+                move = random.choice(possible_moves)
+                target_unit = [u for u in units if u.x == move[0] and u.y == move[1] and u.color != unit.color]
+
+            if target_unit:
+                unit.attack(target_unit[0], units, objectives)
+            else:
+                unit.move(move[0], move[1])
+
+ 
+
+
 # Configuration de la fenêtre
 screen = pygame.display.set_mode((width, height + interface_height))
 pygame.display.set_caption("Carte de 20x20 avec unités et déplacement")
 
-# Générer une carte de size  par sizze
+# Générer une carte de 20 par 20
 game_map = generate_map(size)
 
 # Générer les unités
@@ -259,6 +295,9 @@ while running:
     if not victory:
         unit_moved = False
         for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    unit_moved = True
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -280,11 +319,12 @@ while running:
                                 selected_unit = possible_units[0]
                         if selected_unit:
                             selected_unit.selected = True
+
                     elif event.button == 3:  # Clic droit pour déplacer ou attaquer
                         if selected_unit and selected_unit.color == (PLAYER_COLOR if player_turn else ENEMY_COLOR):
                             target_unit = [u for u in units if u.x == grid_x and u.y == grid_y and u.color != selected_unit.color]
                             
-                            for cible in target_unit:                                
+                            for cible in target_unit:
                                 selected_unit.attack(cible, units, objectives)
                                 
                             if selected_unit.can_move(grid_x, grid_y):
@@ -315,13 +355,13 @@ while running:
                 victory = True
                 victory_message = "Victoire Joueur!"
 
+            if not player_turn:
+                computer(units_to_move,objectives)
+
             pygame.display.flip()
-            pygame.time.wait(2000)
 
     screen.fill((0, 0, 0))
     draw_map(screen, game_map, tile_size)
-    print
-    
     draw_objectives(screen, objectives, tile_size)
     
     for unit in units:
@@ -332,12 +372,17 @@ while running:
     draw_unit_attributes(screen, selected_unit, width, height, interface_height)
     draw_scores(screen, player_score, enemy_score, width, height)
 
+ 
+                    
+            
+        
+
     if victory:
         draw_victory_message(screen, victory_message, width, height)
         pygame.display.flip()
-
+        pygame.time.wait(5000)
         running = False
-    
 
     pygame.display.flip()
+
 pygame.quit()
