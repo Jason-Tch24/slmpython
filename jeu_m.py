@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 # Initialisation de pygame
 pygame.init()
@@ -240,27 +241,10 @@ def move_enemy_units(units, objectives):
                 unit.attack(target_unit, units, objectives)
                 unit.move(target_unit.x, target_unit.y)
             else:
-                # If no player unit to attack, move randomly
-                for x, y in possible_moves:
-                    if unit.can_move(x, y) and not any(u.x == x and u.y == y for u in units):
-                        unit.move(x, y)
-                        break
+                unit.move(move[0], move[1])
 
-    # Check for sandwiches
-    for player_unit in [u for u in units if u.color == PLAYER_COLOR]:
-        x, y = player_unit.x, player_unit.y
-        adjacent_enemies = 0
+ 
 
-        # Check each direction (left, right, up, down)
-        if any(u.x == x-1 and u.y == y and u.color == ENEMY_COLOR for u in units):
-            if any(u.x == x+1 and u.y == y and u.color == ENEMY_COLOR for u in units):
-                adjacent_enemies += 1
-        if any(u.x == x and u.y == y-1 and u.color == ENEMY_COLOR for u in units):
-            if any(u.x == x and u.y == y+1 and u.color == ENEMY_COLOR for u in units):
-                adjacent_enemies += 1
-
-        if adjacent_enemies > 0:
-            units.remove(player_unit)
 
 # Configuration de la fenêtre
 screen = pygame.display.set_mode((width, height + interface_height))
@@ -302,6 +286,7 @@ while running:
                 x, y = event.pos
                 if end_turn_button_clicked((x, y), width, height, interface_height):
                     unit_moved = True
+                    affiche_position(units)
                 else:
                     grid_x, grid_y = x // tile_size, y // tile_size
                     if event.button == 1:  # Clic gauche pour sélectionner
