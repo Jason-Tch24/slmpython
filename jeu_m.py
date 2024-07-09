@@ -233,11 +233,7 @@ def computer(units_to_move , objectives) :
         if obj['type'] == 'MAJOR' :
             matrix[obj['y']][obj['x']] = 3
         else :
-             matrix[obj['y']][obj['x']] = 4
-    
-    
-    print(matrix)
-    
+             matrix[obj['y']][obj['x']] = 4    
     
     for unit in units_to_move:
             possible_moves = [(unit.x + dx, unit.y + dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if unit.can_move(unit.x + dx, unit.y + dy)]
@@ -276,7 +272,7 @@ def affiche_position(units):
         if unit.color == ENEMY_COLOR:
 
             mini = 1000000000000
-            if i < len(objectives):
+            if i < len(objectives)/2:
                 for donnee in matrise_distance[i]:
                     if donnee['Distance'] < mini:
                         mini = donnee['Distance']
@@ -300,6 +296,7 @@ def affiche_position(units):
                                 unit.move(unit.x + 1, unit.y )
                             if (donnee['Diff_x'] < 0 and donnee['Diff_y'] == 0) :
                                 unit.move(unit.x - 1, unit.y )
+                        
 
             print(mini)
             i += 1
@@ -309,7 +306,8 @@ def affiche_position(units):
     #calcul de distance
     print(objectives)
 
- 
+def cible_user(units):
+    return True
 
 
 # Configuration de la fenêtre
@@ -348,7 +346,11 @@ while running:
                 x, y = event.pos
                 if end_turn_button_clicked((x, y), width, height, interface_height):
                     unit_moved = True
-                    affiche_position(units)
+                    if player_turn :
+                        affiche_position(units)
+                        for u in units:
+                            if u.color == ENEMY_COLOR:
+                                u.selected = False
                 else:
                     grid_x, grid_y = x // tile_size, y // tile_size
                     if event.button == 1:  # Clic gauche pour sélectionner
@@ -379,7 +381,7 @@ while running:
 
         if unit_moved:
             for unit in units_to_move:
-                unit.moved = False  # Réinitialiser l'indicateur de mouvement
+                unit.moved = False  # Réinitialiser l'indicateur de mouvemen.p.pt
                 unit.attacked_this_turn = False  # Réinitialiser l'indicateur d'attaque
             player_turn = not player_turn
             units_to_move = [unit for unit in units if (unit.color == PLAYER_COLOR if player_turn else unit.color == ENEMY_COLOR)]
@@ -416,11 +418,6 @@ while running:
     draw_end_turn_button(screen, width, height, interface_height)
     draw_unit_attributes(screen, selected_unit, width, height, interface_height)
     draw_scores(screen, player_score, enemy_score, width, height)
-
- 
-                    
-            
-        
 
     if victory:
         draw_victory_message(screen, victory_message, width, height)
