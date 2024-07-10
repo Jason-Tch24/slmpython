@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 # Initialisation de pygame
 pygame.init()
@@ -98,7 +99,6 @@ class Unit:
 # Générer la carte
 def generate_map(size):
     """Génère une carte de taille spécifiée."""
-    print([[1 for _ in range(size)] for _ in range(size)])
     return [[1 for _ in range(size)] for _ in range(size)]
 
 # Afficher la carte
@@ -221,12 +221,11 @@ def draw_victory_message(screen, message, width, height):
     victory_img = font.render(message, True, (255, 255, 255))
     screen.blit(victory_img, (width // 2 - 100, height // 2 - 24))
 
-# Déplacer les unités ennemies
-def move_enemy_units(units, objectives):
-    """Déplace les unités ennemies."""
-    for unit in units:
+def computer(units_to_move , objectives) :
+    matrix = [[0 for _ in range(size)] for _ in range(size)]; 
+    
+    for unit in units :
         if unit.color == ENEMY_COLOR and not unit.moved:
-<<<<<<< HEAD
             matrix[unit.y][unit.x] = 2
         else :
             matrix[unit.y][unit.x] = 1
@@ -242,7 +241,6 @@ def move_enemy_units(units, objectives):
             if possible_moves:
                 move = random.choice(possible_moves)
                 target_unit = [u for u in units if u.x == move[0] and u.y == move[1] and u.color != unit.color]
-=======
             possible_moves = [(unit.x + dx, unit.y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx != 0 or dy != 0)]
             random.shuffle(possible_moves)
             target_unit = None
@@ -252,24 +250,15 @@ def move_enemy_units(units, objectives):
                 target_unit = next((u for u in units if u.x == x and u.y == y and u.color == PLAYER_COLOR), None)
                 if target_unit:
                     break
->>>>>>> cbaeeeedb82e0f3c471ac8b12a9112c4c351ba03
 
             if target_unit:
-                unit.attack(target_unit, units, objectives)
-                unit.move(target_unit.x, target_unit.y)
+                unit.attack(target_unit[0], units, objectives)
             else:
-                # If no player unit to attack, move randomly
-                for x, y in possible_moves:
-                    if unit.can_move(x, y) and not any(u.x == x and u.y == y for u in units):
-                        unit.move(x, y)
-                        break
+                unit.move(move[0], move[1])
 
-    # Check for sandwiches
-    for player_unit in [u for u in units if u.color == PLAYER_COLOR]:
-        x, y = player_unit.x, player_unit.y
-        adjacent_enemies = 0
+def cilblage( ):
+    return True 
 
-<<<<<<< HEAD
 #afficher les position de chaque unité voir de tout les objectif
 def affiche_position(units):
     matrise_distance = []
@@ -316,8 +305,6 @@ def affiche_position(units):
                                 unit.move(unit.x + 1, unit.y )
                             if (donnee['Diff_x'] < 0 and donnee['Diff_y'] == 0) :
                                 unit.move(unit.x - 1, unit.y )
-                        
-
             print(mini)
             i += 1
 
@@ -328,18 +315,6 @@ def affiche_position(units):
 
 def cible_user(units):
     return True
-=======
-        # Check each direction (left, right, up, down)
-        if any(u.x == x-1 and u.y == y and u.color == ENEMY_COLOR for u in units):
-            if any(u.x == x+1 and u.y == y and u.color == ENEMY_COLOR for u in units):
-                adjacent_enemies += 1
-        if any(u.x == x and u.y == y-1 and u.color == ENEMY_COLOR for u in units):
-            if any(u.x == x and u.y == y+1 and u.color == ENEMY_COLOR for u in units):
-                adjacent_enemies += 1
->>>>>>> cbaeeeedb82e0f3c471ac8b12a9112c4c351ba03
-
-        if adjacent_enemies > 0:
-            units.remove(player_unit)
 
 # Configuration de la fenêtre
 screen = pygame.display.set_mode((width, height + interface_height))
@@ -381,14 +356,11 @@ while running:
                 x, y = event.pos
                 if end_turn_button_clicked((x, y), width, height, interface_height):
                     unit_moved = True
-<<<<<<< HEAD
                     if player_turn :
                         affiche_position(units)
                         for u in units:
                             if u.color == ENEMY_COLOR:
                                 u.selected = False
-=======
->>>>>>> cbaeeeedb82e0f3c471ac8b12a9112c4c351ba03
                 else:
                     grid_x, grid_y = x // tile_size, y // tile_size
                     if event.button == 1:  # Clic gauche pour sélectionner
@@ -427,11 +399,6 @@ while running:
             player_score += player_score_turn
             enemy_score += enemy_score_turn
 
-            if not player_turn:
-                move_enemy_units(units, objectives)
-            
-            
-
             if player_score >= 50:
                 victory = True
                 victory_message = "Victoire Joueur!"
@@ -444,6 +411,9 @@ while running:
             elif not any(unit.color == ENEMY_COLOR for unit in units):
                 victory = True
                 victory_message = "Victoire Joueur!"
+
+            if not player_turn:
+                computer(units_to_move,objectives)
 
             pygame.display.flip()
 
